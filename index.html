@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>For Palku — Our Little Universe</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Mobile-first gentle styling */
+    :root{--accent:#ff6b81;--muted:#f7f7fb}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    body{background:radial-gradient(ellipse at bottom, #0b1220 0%, #02040a 70%);color:#fff;overflow-x:hidden}
+
+    /* starfield canvas — full screen */
+    #stars{position:fixed;inset:0;z-index:0}
+
+    /* main app container */
+    .app{position:relative;z-index:2;min-height:100vh;padding:1.25rem}
+    .card-glass{background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));backdrop-filter: blur(6px);border:1px solid rgba(255,255,255,0.05);border-radius:16px}
+
+    header{display:flex;gap:.75rem;align-items:center;margin-bottom:1rem}
+    .avatar{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#ff9aa2);display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,0.5)}
+    h1{font-size:1.25rem;margin:0}
+    p.lead{opacity:0.9;margin:0;font-size:0.9rem}
+
+    /* typewriter */
+    .typewriter{font-weight:600;letter-spacing:0.2px}
+
+    /* messages carousel */
+    .msg-card{min-height:96px}
+
+    /* timeline */
+    .timeline {display:flex;flex-direction:column;gap:.6rem}
+    .time-item{display:flex;gap:.6rem;align-items:flex-start}
+    .time-bullet{width:12px;height:12px;border-radius:50%;background:var(--accent);margin-top:6px}
+
+    /* game area */
+    #game-card{touch-action:none}
+    #game-canvas{width:100%;border-radius:12px;background:linear-gradient(180deg,#0b1220,#021028);display:block}
+    .game-controls{display:flex;gap:.5rem;justify-content:space-between;align-items:center}
+    .score{font-weight:700}
+
+    /* floating heart messages */
+    .floating-msg{position:relative}
+    .floating-msg .heart{position:absolute;font-size:20px;opacity:0.85}
+
+    /* responsive tweaks */
+    @media (min-width:768px){.app{max-width:720px;margin:0 auto;padding:2rem}}
+
+    /* small utility */
+    .muted{opacity:0.75;font-size:0.85rem}
+    .btn-accent{background:var(--accent);border:0}
+  </style>
+</head>
+<body>
+  <canvas id="stars"></canvas>
+  <main class="app">
+    <header>
+      <div class="avatar">P</div>
+      <div>
+        <h1>For Palku — Our Little Universe</h1>
+        <p class="lead muted">A tiny page I made to tell you — I love you. ❤️</p>
+      </div>
+    </header>
+
+    <!-- Intro / Typewriter -->
+    <section class="mb-3 card-glass p-3">
+      <div class="typewriter" id="typewriter">Hey Palku... there is something I want to tell you.</div>
+      <div class="mt-2 muted">Open on your phone for the best experience 🌙</div>
+    </section>
+
+    <!-- Love messages carousel -->
+    <section class="mb-3 card-glass p-3">
+      <div id="messagesCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="msg-card p-2">Every day with you is my favourite day. — <strong>Me</strong></div>
+          </div>
+          <div class="carousel-item">
+            <div class="msg-card p-2">From messages to voice calls to meeting you — I fell more in every step.</div>
+          </div>
+          <div class="carousel-item">
+            <div class="msg-card p-2">You are my calm, my laugh, and my best story. I promise to always be there.</div>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#messagesCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#messagesCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="mb-3 card-glass p-3">
+      <h5>Our Timeline</h5>
+      <div class="timeline mt-2">
+        <div class="time-item">
+          <div class="time-bullet"></div>
+          <div>
+            <div class="muted">14 March 2025</div>
+            <div><strong>First day we talked</strong> — The day that started everything. I still remember the first message.</div>
+          </div>
+        </div>
+
+        <div class="time-item">
+          <div class="time-bullet"></div>
+          <div>
+            <div class="muted">22 March 2025</div>
+            <div><strong>First video call</strong> — Hearing your voice changed my whole day.</div>
+          </div>
+        </div>
+
+        <div class="time-item">
+          <div class="time-bullet"></div>
+          <div>
+            <div class="muted">9 October 2025</div>
+            <div><strong>First meet</strong> — From online to offline — the best memory yet.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-2">
+        <button class="btn btn-sm btn-accent" id="openMemBtn">See an amazing memory ✨</button>
+      </div>
+    </section>
+
+    <!-- Game: Collect the Hearts -->
+    <section id="game-card" class="mb-3 card-glass p-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <h5 class="mb-0">Collect the Hearts</h5>
+          <div class="muted">Tap / Drag to move the heart and collect sweets of love ❤️</div>
+        </div>
+        <div class="text-end">
+          <div class="score">Score: <span id="scoreVal">0</span></div>
+          <div class="muted" style="font-size:.8rem">Time left: <span id="timeLeft">30</span>s</div>
+        </div>
+      </div>
+
+      <canvas id="game-canvas" width="360" height="240"></canvas>
+      <div class="game-controls mt-2">
+        <button class="btn btn-sm btn-outline-light" id="startBtn">Start</button>
+        <button class="btn btn-sm btn-outline-light" id="resetBtn">Reset</button>
+        <div class="muted">Tip: Move with your finger — collect as many hearts as you can!</div>
+      </div>
+    </section>
+
+    <!-- Floating messages -->
+    <section class="mb-4 card-glass p-3 floating-msg">
+      <h6>Little notes for you</h6>
+      <p class="mb-0">I love the way you smile. I love the way you speak. I love you — more than I can say.</p>
+    </section>
+
+    <footer class="text-center muted small">Made with ❤️ — Always yours</footer>
+  </main>
+
+  <!-- Bootstrap JS bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ------- STARFIELD BACKGROUND -------
+    const stars = document.getElementById('stars');
+    const sCtx = stars.getContext('2d');
+    let DPR = window.devicePixelRatio || 1;
+    function resizeStars(){
+      stars.width = innerWidth * DPR;
+      stars.height = innerHeight * DPR;
+      stars.style.width = innerWidth + 'px';
+      stars.style.height = innerHeight + 'px';
+      drawStars();
+    }
+    function drawStars(){
+      const w = stars.width; const h = stars.height;
+      sCtx.clearRect(0,0,w,h);
+      const count = Math.floor((w*h)/(8000));
+      for(let i=0;i<count;i++){
+        const x = Math.random()*w; const y = Math.random()*h; const r = Math.random()*1.2*DPR;
+        sCtx.beginPath(); sCtx.fillStyle = ['#fff','#ffd6e0','#b3d9ff'][Math.floor(Math.random()*3)]; sCtx.globalAlpha = Math.random()*0.9;
+        sCtx.arc(x,y,r,0,Math.PI*2); sCtx.fill();
+      }
+    }
+    window.addEventListener('resize', resizeStars); resizeStars();
+
+    // ------- TYPEWRITER -------
+    const tw = document.getElementById('typewriter');
+    const lines = [
+      "Hey Palku...",
+      "There is something I want to tell you.",
+      "I love you more than words — every day with you is my favorite day."
+    ];
+    let lineIdx=0, chIdx=0;
+    function typeNext(){
+      if(lineIdx>=lines.length) return;
+      const txt = lines[lineIdx];
+      tw.textContent = txt.slice(0,chIdx);
+      chIdx++;
+      if(chIdx>txt.length){ lineIdx++; chIdx=0; setTimeout(typeNext,600); } else setTimeout(typeNext,45);
+    }
+    setTimeout(typeNext,700);
+
+    // ------- Memory Button (shows a small modal-like sweet memory) -------
+    document.getElementById('openMemBtn').addEventListener('click', ()=>{
+      // Create a simple modal using Bootstrap's modal markup
+      const modalHtml = `
+      <div class="modal fade" tabindex="-1" id="memModal">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content" style="background:linear-gradient(180deg, rgba(2,6,23,.95), rgba(3,9,32,.9));color:#fff;border:0">
+            <div class="modal-header border-0">
+              <h5 class="modal-title">Our first meet — 9 Oct</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>That day when I saw you in person... I felt like the whole digital world made sense. You are perfect to me.</p>
+              <p class="muted"></p>
+            </div>
+            <div class="modal-footer border-0">
+              <button class="btn btn-sm btn-accent" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      const wrapper = document.createElement('div'); wrapper.innerHTML = modalHtml; document.body.appendChild(wrapper);
+      const bsModal = new bootstrap.Modal(document.getElementById('memModal'));
+      bsModal.show();
+      document.getElementById('memModal').addEventListener('hidden.bs.modal', ()=>{ wrapper.remove(); });
+    });
+
+    // ------- SIMPLE HEART COLLECT GAME -------
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    let cw = canvas.width, ch = canvas.height;
+    function fitCanvas(){
+      // fit canvas to element pixel size for crispness
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(rect.width * ratio);
+      canvas.height = Math.floor(rect.height * ratio * 0.62);
+      cw = canvas.width; ch = canvas.height;
+    }
+    fitCanvas(); window.addEventListener('resize', fitCanvas);
+
+    // Player heart
+    const player = {x:0.5, y:0.7, r:18, vx:0, vy:0}; // x,y in relative (0..1)
+    let collectItems = [];
+    let score=0, running=false, timeLeft=30, gameTimer=null;
+
+    function spawnItem(){
+      const item = {x:Math.random()*0.9+0.05, y:Math.random()*0.2+0.05, r:12+Math.random()*10, kind:'heart', born:Date.now()};
+      collectItems.push(item);
+    }
+
+    function resetGame(){ score=0; collectItems=[]; timeLeft=30; running=false; document.getElementById('scoreVal').textContent=score; document.getElementById('timeLeft').textContent=timeLeft; clearInterval(gameTimer); draw(); }
+    document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+    function startGame(){ if(running) return; running=true; score=0; collectItems=[]; timeLeft=30; document.getElementById('scoreVal').textContent=0; document.getElementById('timeLeft').textContent=timeLeft;
+      // spawn rhythm
+      const spawnInt = setInterval(()=>{ if(!running) { clearInterval(spawnInt); return;} spawnItem(); }, 900);
+      gameTimer = setInterval(()=>{ if(!running) return; timeLeft--; document.getElementById('timeLeft').textContent=timeLeft; if(timeLeft<=0){ running=false; clearInterval(gameTimer); showResult(); } },1000);
+      requestAnimationFrame(loop);
+    }
+    document.getElementById('startBtn').addEventListener('click', startGame);
+
+    // input handling (touch + mouse)
+    let pointerActive=false;
+    function toCanvasPos(evt){
+      const rect = canvas.getBoundingClientRect();
+      const touch = evt.touches ? evt.touches[0] : evt;
+      const x = (touch.clientX - rect.left) / rect.width;
+      const y = (touch.clientY - rect.top) / rect.height;
+      return {x:Math.max(0,Math.min(1,x)), y:Math.max(0,Math.min(1,y))};
+    }
+    canvas.addEventListener('pointerdown', (e)=>{ pointerActive=true; const p=toCanvasPos(e); player.x=p.x; player.y=p.y; });
+    canvas.addEventListener('pointermove', (e)=>{ if(!pointerActive) return; const p=toCanvasPos(e); player.x=p.x; player.y=p.y; });
+    canvas.addEventListener('pointerup', ()=>{ pointerActive=false; });
+    canvas.addEventListener('pointercancel', ()=>{ pointerActive=false; });
+
+    function drawHeart(x,y,s){
+      // draw simple heart shape at x,y in canvas px
+      ctx.save(); ctx.translate(x,y); ctx.scale(s/30,s/30);
+      ctx.beginPath(); ctx.moveTo(0,-10); ctx.bezierCurveTo(20,-40,60,-10,0,40); ctx.bezierCurveTo(-60,-10,-20,-40,0,-10); ctx.closePath(); ctx.fillStyle = '#ff6b81'; ctx.fill(); ctx.restore();
+    }
+
+    function loop(){ draw(); if(running) requestAnimationFrame(loop); }
+
+    function draw(){
+      // clear
+      ctx.clearRect(0,0,cw,ch);
+      // background subtle
+      ctx.fillStyle = 'rgba(2,6,23,0.2)'; ctx.fillRect(0,0,cw,ch);
+      // draw items
+      for(let i=collectItems.length-1;i>=0;i--){
+        const it = collectItems[i];
+        const px = it.x * cw; const py = it.y * ch;
+        drawHeart(px,py,it.r);
+        // simple float animation
+        it.y += 0.002 + Math.sin((Date.now()+i*100)/500)*0.0005;
+        // remove old
+        if(Date.now()-it.born>9000) collectItems.splice(i,1);
+      }
+      // draw player
+      const px = player.x * cw; const py = player.y * ch;
+      drawHeart(px,py,player.r);
+      // collision
+      for(let i=collectItems.length-1;i>=0;i--){
+        const it = collectItems[i];
+        const dx = (it.x - player.x) * cw; const dy = (it.y - player.y) * ch; const dist = Math.sqrt(dx*dx + dy*dy);
+        if(dist < (it.r + player.r) * 0.6){
+          score += 1; document.getElementById('scoreVal').textContent = score; collectItems.splice(i,1);
+        }
+      }
+    }
+
+    function showResult(){
+      // simple result modal
+      const modalHtml = `
+      <div class="modal fade" id="resModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content" style="background:linear-gradient(180deg, rgba(2,6,23,.95), rgba(3,9,32,.9));color:#fff;border:0">
+            <div class="modal-header border-0">
+              <h5 class="modal-title">Game over — Score: ${score}</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <p>You collected ${score} hearts. Just like I collect memories with you — one at a time.</p>
+            </div>
+            <div class="modal-footer border-0">
+              <button class="btn btn-sm btn-accent" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      const wrapper = document.createElement('div'); wrapper.innerHTML = modalHtml; document.body.appendChild(wrapper);
+      const bsModal = new bootstrap.Modal(document.getElementById('resModal'));
+      bsModal.show();
+      document.getElementById('resModal').addEventListener('hidden.bs.modal', ()=>{ wrapper.remove(); resetGame(); });
+    }
+
+    // initial draw
+    draw();
+
+    // ------- small floating hearts effect near "Little notes" (non-intrusive) -------
+    (function floatingHearts(){
+      const container = document.querySelector('.floating-msg');
+      if(!container) return;
+      function make(){
+        const el = document.createElement('div'); el.className='heart'; el.textContent='❤️';
+        el.style.left = Math.random()*70 + '%'; el.style.bottom = '0px'; el.style.opacity = 0.9; el.style.transform = 'translateY(0)'; el.style.position='absolute';
+        container.appendChild(el);
+        const dur = 3000 + Math.random()*2000;
+        const toY = -120 - Math.random()*80;
+        el.animate([{transform:'translateY(0)',opacity:1},{transform:`translateY(${toY}px)`,opacity:0}],{duration:dur, easing:'ease-out'});
+        setTimeout(()=>el.remove(), dur+80);
+      }
+      setInterval(make, 700);
+    })();
+
+    // Optional: pre-populate timeline dates with user's provided ones — they are already set above.
+
+    // Accessibility: allow keyboard start
+    document.addEventListener('keydown', e=>{ if(e.key===' '){ e.preventDefault(); startGame(); } });
+  </script>
+</body>
+</html>
